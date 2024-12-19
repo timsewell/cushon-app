@@ -29,6 +29,7 @@ export const FundSelector: React.FC<FundSelectorProps> = ({
       setFunds(applyInvestments(investedFunds, mockFunds));
     }
   }, [investedFunds]);
+
   return (
     <ListGroup className='fund-selector'>
       {funds.map((fund: Fund) => {

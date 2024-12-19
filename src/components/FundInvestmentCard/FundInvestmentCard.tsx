@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent, useCallback, useState } from 'react';
 import { FundInvestmentCardProps } from './FundInvestmentCard.types';
 import { Button, Form } from 'react-bootstrap';
 
@@ -9,25 +9,26 @@ export const FundInvestmentCard: React.FC<FundInvestmentCardProps> = ({
   multiple,
   onSetAmountToFund,
 }) => {
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState(fund.amount);
 
-  const onSetAmount = (e: ChangeEvent<HTMLInputElement>) => {
+  const onSetAmount = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
 
     if (multiple) {
+      setAmount(Number(value));
       return onSetAmountToFund({ ...fund, amount: Number(value) });
     }
     setAmount(Number(value));
-  };
+  }, []);
 
-  const onSubmitInvestment = () => {
+  const onSubmitInvestment = useCallback(() => {
     onSubmit([{ ...fund, amount }]);
-  };
+  }, [fund, amount]);
 
-  const onRemoveFund = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const onRemoveFund = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
     e.stopPropagation();
     onRemove(fund);
-  };
+  }, []);
 
   return (
     <div className='fund-investment-card'>
@@ -36,19 +37,17 @@ export const FundInvestmentCard: React.FC<FundInvestmentCardProps> = ({
         <span className='input'>
           £
           <Form.Control
-            type='number'
+            type='text'
             placeholder='Amount...'
             onChange={onSetAmount}
-            value={fund.amount}
+            value={amount || ''}
           />
         </span>
       </span>
       <span className='controls'>
-        {multiple && (
-          <a href='#' title='Remove' onClick={onRemoveFund}>
-            X
-          </a>
-        )}
+        <a href='#' title='Remove' onClick={onRemoveFund}>
+          X
+        </a>
         {!multiple && (
           <Button
             variant='primary'

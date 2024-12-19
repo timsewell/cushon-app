@@ -27,7 +27,7 @@ export const SubmittedModal: React.FC<SubmittedModalProps> = ({
           <ul>
             {funds.map((fund) => {
               return (
-                <li>
+                <li key={fund.id}>
                   {fund.name} - £{fund.amount}
                 </li>
               );

@@ -2,7 +2,7 @@ import { Button } from 'react-bootstrap';
 import { Fund } from '../../api/types';
 import { FundInvestmentCard } from '../FundInvestmentCard/FundInvestmentCard';
 import { FundInvestmentCardsContainerProps } from './FundInvestmentCardsContainer.types';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export const FundInvestmentCardsContainer: React.FC<
   FundInvestmentCardsContainerProps
@@ -10,29 +10,32 @@ export const FundInvestmentCardsContainer: React.FC<
   const [multipleFunds, setMultipleFunds] = useState<Fund[]>([]);
   const [enableButton, setEnableButton] = useState(false);
 
-  const onSubmitFunds = (funds: Fund[]) => {
+  const onSubmitFunds = useCallback((funds: Fund[]) => {
     onSubmit(funds);
-  };
+  }, []);
 
-  const onFundCardRemove = (fund: Fund) => {
+  const onFundCardRemove = useCallback((fund: Fund) => {
     onRemove(fund);
-  };
+  }, []);
 
-  const onSubmitMultiple = () => {
+  const onSubmitMultiple = useCallback(() => {
     onSubmit(multipleFunds);
-  };
+  }, [multipleFunds]);
 
-  const onSetAmount = (fund: Fund) => {
-    const newSet = [...multipleFunds].map((fundInState) => {
-      if (fundInState.id === fund.id) {
-        return { ...fundInState, amount: fund.amount || undefined };
-      }
-      return fundInState;
-    });
+  const onSetAmount = useCallback(
+    (fund: Fund) => {
+      const newSet = [...multipleFunds].map((fundInState) => {
+        if (fundInState.id === fund.id) {
+          return { ...fundInState, amount: fund.amount || undefined };
+        }
+        return fundInState;
+      });
 
-    setEnableButton(newSet.every(({ amount }) => amount && amount > 0));
-    setMultipleFunds(newSet);
-  };
+      setEnableButton(newSet.every(({ amount }) => amount && amount > 0));
+      setMultipleFunds(newSet);
+    },
+    [multipleFunds]
+  );
 
   useEffect(() => {
     if (!funds) {

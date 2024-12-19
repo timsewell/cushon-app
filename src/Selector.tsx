@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useGetPreviouslySelectedFunds } from './api/hooks/getPreviouslySelectedFunds';
 import { useSaveSubmittedFunds } from './api/hooks/saveSubmittedFunds';
@@ -24,7 +24,7 @@ export const Selector: React.FC = () => {
   const getSavedFunds = useGetPreviouslySelectedFunds(mockUser, !!multiple);
   const navigate = useNavigate();
 
-  const investedFunds = getSavedFunds();
+  const investedFunds: Fund[] = getSavedFunds();
 
   const {
     submitted,
@@ -34,25 +34,40 @@ export const Selector: React.FC = () => {
     setSubmitted,
   } = useManageFunds();
 
-  const onCancel = () => {
+  const onCancel = useCallback(() => {
     setShowModal(false);
     setSubmitted([]);
     setSelectedFunds([]);
-  };
+  }, []);
 
-  const onSave = (funds: Fund[]) => {
-    if (funds.length === 0) {
-      return;
-    }
-    saveFunds(funds);
-    setSelectedFunds([]);
-    setSubmitted([]);
-    setShowSuccess(true);
-  };
+  const onSave = useCallback(
+    (funds: Fund[]) => {
+      let fundsToSave = funds;
 
-  const onRemoveFund = (fund: Fund) => {
-    setSelectedFunds(selectedFunds.filter(({ id }) => id !== fund.id));
-  };
+      if (funds.length === 0) {
+        return;
+      }
+      if (multiple) {
+        const fundIds = funds.map(({ id }) => id);
+        const alreadySaved = investedFunds.filter(
+          ({ id }) => !fundIds.includes(id)
+        );
+        fundsToSave = [...funds, ...alreadySaved];
+      }
+      saveFunds([...fundsToSave], !!multiple);
+      setSelectedFunds([]);
+      setSubmitted([]);
+      setShowSuccess(true);
+    },
+    [investedFunds]
+  );
+
+  const onRemoveFund = useCallback(
+    (fund: Fund) => {
+      setSelectedFunds(selectedFunds.filter(({ id }) => id !== fund.id));
+    },
+    [selectedFunds]
+  );
 
   useEffect(() => {
     if (!submitted.length || submitted.length !== selectedFunds.length) {
