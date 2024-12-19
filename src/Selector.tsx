@@ -85,7 +85,7 @@ export const Selector: React.FC = () => {
         )}
         {investedFunds.length > 0 && !showSuccess && (
           <div className='invested-funds'>
-            You have already selected:
+            <div>You have already selected:</div>
             <ul>
               {(investedFunds as Fund[]).map((investedFund) => {
                 return (
