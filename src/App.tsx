@@ -14,15 +14,17 @@ function App() {
         </a>
       </div>
       <h1>NatWest Cushon Coding Exercise / Tim Sewell</h1>
-      <Button variant='link' onClick={() => navigate('/selector')}>
-        Single
-      </Button>
-      <Button
-        variant='link'
-        onClick={() => navigate('/selector?multiple=true')}
-      >
-        Multiple
-      </Button>
+      <div className='buttons'>
+        <Button variant='link' onClick={() => navigate('/selector')}>
+          Single
+        </Button>
+        <Button
+          variant='link'
+          onClick={() => navigate('/selector?multiple=true')}
+        >
+          Multiple
+        </Button>
+      </div>
     </>
   );
 }
