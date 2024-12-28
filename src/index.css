@@ -216,9 +216,9 @@ button:focus-visible {
 
 .multiple-submit-container {
   width: 100%;
-  display: flex;
-  justify-content: flex-end;
   margin-top: 8px;
+  display: flex;
+  align-items: center;
   justify-content: space-between;
 }
 
