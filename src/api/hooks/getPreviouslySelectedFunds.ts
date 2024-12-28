@@ -1,20 +1,32 @@
-import { Fund, User } from '../types';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { User } from '../types';
+import { useSupabase } from './supabase';
+import { useQuery } from '@tanstack/react-query';
+
+const getInvestedFunds = (
+  supabase: SupabaseClient,
+  userId: number,
+  multiple: boolean
+) => {
+  return supabase
+    .from('invested_funds')
+    .select()
+    .eq('user_id', userId)
+    .eq('multiple', multiple);
+};
 
 export const useGetPreviouslySelectedFunds = (
   user: User,
   multiple: boolean
 ) => {
-  // IRL this would be an API call.
-  const getSavedFunds = (): Fund[] => {
-    const key = multiple ? 'multiple' + user.id : String(user.id);
+  const supabase = useSupabase();
+  const queryKey = ['investedFunds'];
 
-    const item = localStorage.getItem(key);
-
-    if (item) {
-      return Array.from(JSON.parse(item));
-    }
-    return [];
+  const queryFn = async () => {
+    return getInvestedFunds(supabase, user.id, multiple).then(
+      (result) => result.data
+    );
   };
 
-  return getSavedFunds;
+  return useQuery({ queryKey, queryFn });
 };

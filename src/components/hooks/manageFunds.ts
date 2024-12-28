@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Fund } from '../../api/types';
 
-export const useManageFunds = () => {
+export const useManageFunds = (allFunds: Fund[]) => {
   const [selectedFunds, setSelectedFunds] = useState<Fund[]>([]);
   const [submitted, setSubmitted] = useState<Fund[]>([]);
 
@@ -10,25 +10,47 @@ export const useManageFunds = () => {
     multiple: boolean,
     submit?: boolean
   ) => {
-    const setState = submit ? setSubmitted : setSelectedFunds;
-    const current = submit ? submitted : selectedFunds;
     const fundIds = funds.map(({ id }) => id);
 
-    if (!multiple) {
-      return setState([funds[0]]);
-    }
     if (submit) {
-      return setState([...current, ...funds]);
+      return onSubmitFund(funds, multiple, fundIds);
     }
-    if (
-      current.filter((selectedFund) => fundIds.includes(selectedFund.id)).length
-    ) {
-      return setState([
-        ...current.filter((selectedFund) => !fundIds.includes(selectedFund.id)),
+    return onSelectFund(multiple, fundIds);
+  };
+
+  const onSelectFund = (multiple: boolean, fundIds: number[]) => {
+    if (!multiple) {
+      const fund = allFunds.find(({ id }) => fundIds.includes(id));
+      if (fund) {
+        setSelectedFunds([fund]);
+      }
+    } else {
+      setSelectedFunds([
+        ...selectedFunds,
+        ...allFunds.filter(({ id }) => fundIds.includes(id)),
+      ]);
+    }
+  };
+
+  const onRemoveFund = (fund: Fund) => {
+    setSelectedFunds(selectedFunds.filter(({ id }) => id !== fund.id));
+  };
+
+  const onSubmitFund = (
+    funds: Fund[],
+    multiple: boolean,
+    fundIds: number[]
+  ) => {
+    if (!multiple) {
+      return setSubmitted([funds[0]]);
+    }
+    if (submitted.filter(({ id }) => fundIds.includes(id))) {
+      return setSubmitted([
+        ...submitted.filter(({ id }) => !fundIds.includes(id)),
         ...funds,
       ]);
     }
-    setState([...current, ...funds]);
+    return setSubmitted([...submitted, ...funds]);
   };
 
   return {
@@ -36,6 +58,7 @@ export const useManageFunds = () => {
     submitted,
     onFundSelectedorSubmitted,
     setSelectedFunds,
+    onRemoveFund,
     setSubmitted,
   };
 };

@@ -2,40 +2,35 @@ import { Button } from 'react-bootstrap';
 import { Fund } from '../../api/types';
 import { FundInvestmentCard } from '../FundInvestmentCard/FundInvestmentCard';
 import { FundInvestmentCardsContainerProps } from './FundInvestmentCardsContainer.types';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 export const FundInvestmentCardsContainer: React.FC<
   FundInvestmentCardsContainerProps
-> = ({ funds, onSubmit, onRemove }) => {
+> = ({ funds, onSubmit, onRemove, multiple }) => {
   const [multipleFunds, setMultipleFunds] = useState<Fund[]>([]);
-  const [enableButton, setEnableButton] = useState(false);
 
   const onSubmitFunds = useCallback((funds: Fund[]) => {
     onSubmit(funds);
   }, []);
 
-  const onFundCardRemove = useCallback((fund: Fund) => {
+  const onFundCardRemove = (fund: Fund) => {
     onRemove(fund);
-  }, []);
+  };
 
   const onSubmitMultiple = useCallback(() => {
     onSubmit(multipleFunds);
   }, [multipleFunds]);
 
-  const onSetAmount = useCallback(
-    (fund: Fund) => {
-      const newSet = [...multipleFunds].map((fundInState) => {
-        if (fundInState.id === fund.id) {
-          return { ...fundInState, amount: fund.amount || undefined };
-        }
-        return fundInState;
-      });
+  const onSetAmount = (fund: Fund) => {
+    const newSet = multipleFunds.map((fundInState) => {
+      if (fundInState.id === fund.id) {
+        return { ...fundInState, amount: fund.amount || undefined };
+      }
+      return fundInState;
+    });
 
-      setEnableButton(newSet.every(({ amount }) => amount && amount > 0));
-      setMultipleFunds(newSet);
-    },
-    [multipleFunds]
-  );
+    setMultipleFunds(newSet);
+  };
 
   useEffect(() => {
     if (!funds) {
@@ -43,6 +38,16 @@ export const FundInvestmentCardsContainer: React.FC<
     }
     setMultipleFunds(funds);
   }, [funds]);
+
+  const total = useMemo(
+    () =>
+      multipleFunds.reduce((num, fund) => {
+        return num + (fund?.amount || 0);
+      }, 0),
+    [multipleFunds]
+  );
+
+  const combinedMultiple = multiple && funds.length > 1;
 
   return (
     <>
@@ -52,19 +57,21 @@ export const FundInvestmentCardsContainer: React.FC<
             fund={fund}
             onSubmit={onSubmitFunds}
             onRemove={onFundCardRemove}
-            multiple={funds.length > 1}
+            multiple={combinedMultiple}
             onSetAmountToFund={onSetAmount}
             key={fund.id}
           />
         );
       })}
-      {funds.length > 1 && (
+      {combinedMultiple && (
         <div className='multiple-submit-container'>
+          {total > 0 && (
+            <div>Total: {(Math.round(total * 100) / 100).toFixed(2)}</div>
+          )}
           <Button
             variant='primary'
             onClick={() => onSubmitMultiple()}
             className='submit-button-multi'
-            disabled={!enableButton}
           >
             Submit
           </Button>

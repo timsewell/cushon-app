@@ -1,8 +1,8 @@
-import { Fund } from '../../api/types';
+import { Fund, InvestedFund } from '../../api/types';
 
 export interface FundSelectorProps {
   onSelect: (value: Fund[], multiple: boolean) => void;
   selectedFunds: number[];
-  investedFunds?: Fund[];
+  investedFunds: Fund[];
   multiple: boolean;
 }

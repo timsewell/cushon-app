@@ -3,6 +3,7 @@ export interface Fund {
   id: number;
   description: string;
   amount?: number;
+  selected?: boolean;
 }
 
 export interface User {
@@ -12,4 +13,10 @@ export interface User {
     fund: Fund;
     investment?: number;
   }[];
+}
+
+export interface InvestedFund {
+  id: number;
+  amount: number;
+  fund_id: number;
 }

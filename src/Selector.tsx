@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useGetPreviouslySelectedFunds } from './api/hooks/getPreviouslySelectedFunds';
 import { useSaveSubmittedFunds } from './api/hooks/saveSubmittedFunds';
 import { mockUser } from './api/mocks';
-import { Fund } from './api/types';
+import { Fund, InvestedFund } from './api/types';
 import { FundDescription } from './components/FundDescription/FundDescription';
 import {
   FundInvestmentCardsContainer,
@@ -14,25 +14,36 @@ import {
 } from './components';
 import { useManageFunds } from './components/hooks/manageFunds';
 import { Button } from 'react-bootstrap';
+import { useGetFunds } from './api/hooks/getFunds';
+import { combineFunds } from './api/utils';
 
 export const Selector: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [searchParams] = useSearchParams();
-  const multiple = searchParams.get('multiple');
-  const { saveFunds } = useSaveSubmittedFunds(mockUser);
-  const getSavedFunds = useGetPreviouslySelectedFunds(mockUser, !!multiple);
+  const multiple = !!searchParams.get('multiple');
   const navigate = useNavigate();
+  const mutation = useSaveSubmittedFunds();
 
-  const investedFunds: Fund[] = getSavedFunds();
+  const { data: investedFunds = [] } = useGetPreviouslySelectedFunds(
+    mockUser,
+    multiple
+  );
+  const { data: fundsFromAPI = [] } = useGetFunds();
+
+  const fundsData: Fund[] = useMemo(
+    () => combineFunds(investedFunds as InvestedFund[], fundsFromAPI as Fund[]),
+    [fundsFromAPI, investedFunds]
+  );
 
   const {
     submitted,
     selectedFunds,
+    onRemoveFund,
     onFundSelectedorSubmitted,
     setSelectedFunds,
     setSubmitted,
-  } = useManageFunds();
+  } = useManageFunds(fundsData);
 
   const onCancel = useCallback(() => {
     setShowModal(false);
@@ -40,34 +51,28 @@ export const Selector: React.FC = () => {
     setSelectedFunds([]);
   }, []);
 
-  const onSave = useCallback(
-    (funds: Fund[]) => {
-      let fundsToSave = funds;
+  const onSave = (funds: Fund[]) => {
+    let fundsToSave = funds;
 
-      if (funds.length === 0) {
-        return;
-      }
-      if (multiple) {
-        const fundIds = funds.map(({ id }) => id);
-        const alreadySaved = investedFunds.filter(
-          ({ id }) => !fundIds.includes(id)
-        );
-        fundsToSave = [...funds, ...alreadySaved];
-      }
-      saveFunds([...fundsToSave], !!multiple);
-      setSelectedFunds([]);
-      setSubmitted([]);
-      setShowSuccess(true);
-    },
-    [investedFunds]
-  );
+    const fundIds = funds.map(({ id }) => id);
 
-  const onRemoveFund = useCallback(
-    (fund: Fund) => {
-      setSelectedFunds(selectedFunds.filter(({ id }) => id !== fund.id));
-    },
-    [selectedFunds]
-  );
+    if (funds.length === 0) {
+      return;
+    }
+
+    if (multiple) {
+      const alreadySaved = (fundsData ?? []).filter(
+        ({ amount, id }) => amount && amount > 0 && !fundIds.includes(id)
+      );
+      fundsToSave = [...funds, ...alreadySaved].filter(
+        ({ amount }) => amount && amount > 0
+      );
+    }
+    mutation.mutate({ funds: fundsToSave, user: mockUser, multiple: multiple });
+    setSelectedFunds([]);
+    setSubmitted([]);
+    setShowSuccess(true);
+  };
 
   useEffect(() => {
     if (!submitted.length || submitted.length !== selectedFunds.length) {
@@ -90,39 +95,45 @@ export const Selector: React.FC = () => {
       <div>
         <FundDescription
           fund={selectedFunds[selectedFunds.length - 1]}
-          multiple={!!multiple}
+          multiple={multiple}
         />
         {showSuccess && (
           <SuccessMessage
-            multiple={!!multiple}
+            multiple={multiple}
             onClick={() => setShowSuccess(false)}
           />
         )}
-        {investedFunds.length > 0 && !showSuccess && (
+        {(investedFunds ?? []).length > 0 && !showSuccess && (
           <div className='invested-funds'>
             <div>You have already selected:</div>
             <ul>
-              {(investedFunds as Fund[]).map((investedFund) => {
-                return (
-                  <li key={investedFund.id}>
-                    {investedFund.name} - £{investedFund.amount}
-                  </li>
-                );
-              })}
+              {(fundsData as Fund[])
+                .map((investedFund) => {
+                  if (investedFund.amount) {
+                    return (
+                      <li key={investedFund.id}>
+                        {investedFund.name} - £{investedFund.amount}
+                      </li>
+                    );
+                    return null;
+                  }
+                })
+                .filter(Boolean)}
             </ul>
           </div>
         )}
         <FundSelector
-          multiple={!!multiple}
-          investedFunds={investedFunds as Fund[]}
+          multiple={multiple}
+          investedFunds={fundsData}
           onSelect={onFundSelectedorSubmitted}
           selectedFunds={selectedFunds.map(({ id }) => id)}
         />
         {selectedFunds.length > 0 && (
           <FundInvestmentCardsContainer
+            multiple={multiple}
             onRemove={onRemoveFund}
             onSubmit={(funds) =>
-              onFundSelectedorSubmitted(funds, !!multiple, true)
+              onFundSelectedorSubmitted(funds, multiple, true)
             }
             funds={selectedFunds}
           />

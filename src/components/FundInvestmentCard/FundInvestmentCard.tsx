@@ -11,24 +11,24 @@ export const FundInvestmentCard: React.FC<FundInvestmentCardProps> = ({
 }) => {
   const [amount, setAmount] = useState(fund.amount);
 
-  const onSetAmount = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+  const onSetAmount = (e: ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
 
     if (multiple) {
       setAmount(Number(value));
-      return onSetAmountToFund({ ...fund, amount: Number(value) });
+      return onSetAmountToFund({ ...fund, amount: parseFloat(value) });
     }
     setAmount(Number(value));
-  }, []);
+  };
 
   const onSubmitInvestment = useCallback(() => {
     onSubmit([{ ...fund, amount }]);
   }, [fund, amount]);
 
-  const onRemoveFund = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
+  const onRemoveFund = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.stopPropagation();
     onRemove(fund);
-  }, []);
+  };
 
   return (
     <div className='fund-investment-card'>
@@ -37,7 +37,7 @@ export const FundInvestmentCard: React.FC<FundInvestmentCardProps> = ({
         <span className='input'>
           £
           <Form.Control
-            type='text'
+            type='number'
             placeholder='Amount...'
             onChange={onSetAmount}
             value={amount || ''}
@@ -53,7 +53,6 @@ export const FundInvestmentCard: React.FC<FundInvestmentCardProps> = ({
             variant='primary'
             onClick={onSubmitInvestment}
             className='submit-button'
-            disabled={amount === 0}
           >
             Submit
           </Button>
