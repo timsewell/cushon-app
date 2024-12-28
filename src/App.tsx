@@ -2,7 +2,6 @@ import cushonLogo from '/cushon-final-logo-RGB.png';
 import './App.css';
 import { Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router';
-import { useEffect } from 'react';
 
 function App() {
   const navigate = useNavigate();
