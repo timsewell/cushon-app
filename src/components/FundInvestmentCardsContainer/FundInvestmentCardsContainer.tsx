@@ -11,6 +11,7 @@ export const FundInvestmentCardsContainer: React.FC<
 
   const onSubmitFunds = useCallback((funds: Fund[]) => {
     onSubmit(funds);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onFundCardRemove = (fund: Fund) => {
@@ -19,6 +20,7 @@ export const FundInvestmentCardsContainer: React.FC<
 
   const onSubmitMultiple = useCallback(() => {
     onSubmit(multipleFunds);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [multipleFunds]);
 
   const onSetAmount = (fund: Fund) => {

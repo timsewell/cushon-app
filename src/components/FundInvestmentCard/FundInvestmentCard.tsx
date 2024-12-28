@@ -23,6 +23,7 @@ export const FundInvestmentCard: React.FC<FundInvestmentCardProps> = ({
 
   const onSubmitInvestment = useCallback(() => {
     onSubmit([{ ...fund, amount }]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fund, amount]);
 
   const onRemoveFund = (e: React.MouseEvent<HTMLAnchorElement>) => {

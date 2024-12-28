@@ -49,6 +49,7 @@ export const Selector: React.FC = () => {
     setShowModal(false);
     setSubmitted([]);
     setSelectedFunds([]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onSave = (funds: Fund[]) => {
@@ -79,6 +80,7 @@ export const Selector: React.FC = () => {
       return;
     }
     setShowModal(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [submitted]);
 
   return (

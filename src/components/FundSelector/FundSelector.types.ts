@@ -1,4 +1,4 @@
-import { Fund, InvestedFund } from '../../api/types';
+import { Fund } from '../../api/types';
 
 export interface FundSelectorProps {
   onSelect: (value: Fund[], multiple: boolean) => void;
