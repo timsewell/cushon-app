@@ -219,6 +219,7 @@ button:focus-visible {
   display: flex;
   justify-content: flex-end;
   margin-top: 8px;
+  justify-content: space-between;
 }
 
 .submit-button,
