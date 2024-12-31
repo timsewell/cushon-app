@@ -25,6 +25,15 @@ export const useManageFunds = (allFunds: Fund[]) => {
         setSelectedFunds([fund]);
       }
     } else {
+      const alreadySelected = selectedFunds.filter(({ id }) =>
+        fundIds.includes(id)
+      );
+
+      if (alreadySelected.length) {
+        return setSelectedFunds(
+          selectedFunds.filter(({ id }) => !fundIds.includes(id))
+        );
+      }
       setSelectedFunds([
         ...selectedFunds,
         ...allFunds.filter(({ id }) => fundIds.includes(id)),
